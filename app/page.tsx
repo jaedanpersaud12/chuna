@@ -28,6 +28,7 @@ import {
 import {
   deleteCloudTuning,
   fetchCloudTunings,
+  renameCloudTuning,
   saveCloudTuning,
 } from "@/lib/cloudTunings";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,9 @@ export default function Home() {
   const [locked, setLocked] = useState<number | null>(null);
   const [saved, setSaved] = useState<Tuning[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  // Name of the saved tuning currently being edited, tracked across note
+  // changes so re-saving updates it in place rather than making a duplicate.
+  const [activeSavedName, setActiveSavedName] = useState<string | null>(null);
 
   const { status, reading, start, stop } = useTuner();
   const { user } = useUser();
@@ -146,6 +150,7 @@ export default function Home() {
       const tuning: Tuning = { name, notes: [...notes] };
       const next = [...saved.filter((t) => t.name !== name), tuning];
       setSaved(next);
+      setActiveSavedName(name);
       if (user) {
         try {
           await saveCloudTuning(user.id, name, tuning.notes);
@@ -167,9 +172,11 @@ export default function Home() {
     async (name: string) => {
       const next = saved.filter((t) => t.name !== name);
       setSaved(next);
+      if (name === activeSavedName) setActiveSavedName(null);
       if (user) {
         try {
           await deleteCloudTuning(name);
+          toast.success(`Deleted "${name}"`);
         } catch (err) {
           toast.error(
             err instanceof Error ? err.message : "Couldn't delete tuning"
@@ -177,6 +184,37 @@ export default function Home() {
         }
       } else {
         persistSavedTunings(next);
+        toast.success(`Deleted "${name}"`);
+      }
+    },
+    [saved, user, activeSavedName]
+  );
+
+  const renameTuning = useCallback(
+    async (oldName: string, newNameRaw: string) => {
+      const newName = newNameRaw.trim();
+      if (!newName || newName === oldName) return;
+      if (saved.some((t) => t.name === newName)) {
+        toast.error(`A tuning named "${newName}" already exists`);
+        return;
+      }
+      const next = saved.map((t) =>
+        t.name === oldName ? { ...t, name: newName } : t
+      );
+      setSaved(next);
+      setActiveSavedName((cur) => (cur === oldName ? newName : cur));
+      if (user) {
+        try {
+          await renameCloudTuning(oldName, newName);
+          toast.success(`Renamed to "${newName}"`);
+        } catch (err) {
+          toast.error(
+            err instanceof Error ? err.message : "Couldn't rename tuning"
+          );
+        }
+      } else {
+        persistSavedTunings(next);
+        toast.success(`Renamed to "${newName}"`);
       }
     },
     [saved, user]
@@ -199,12 +237,15 @@ export default function Home() {
       <TuningPicker
         currentNotes={notes}
         savedTunings={saved}
-        onApply={(n) => {
+        activeSavedName={activeSavedName}
+        onApply={(n, savedName) => {
           setNotes([...n]);
           setLocked(null);
+          setActiveSavedName(savedName ?? null);
         }}
         onSave={saveTuning}
         onDelete={deleteTuning}
+        onRename={renameTuning}
       />
 
       <TunerGauge

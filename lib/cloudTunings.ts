@@ -36,3 +36,15 @@ export async function deleteCloudTuning(name: string): Promise<void> {
   const { error } = await supabase.from("user_tunings").delete().eq("name", name);
   if (error) throw error;
 }
+
+export async function renameCloudTuning(
+  oldName: string,
+  newName: string
+): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("user_tunings")
+    .update({ name: newName })
+    .eq("name", oldName);
+  if (error) throw error;
+}

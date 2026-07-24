@@ -22,14 +22,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TrashIcon } from "@phosphor-icons/react";
+import { SlidersHorizontalIcon } from "@phosphor-icons/react";
+import ManageTuningsDialog from "@/components/ManageTuningsDialog";
 
 interface Props {
   currentNotes: number[];
   savedTunings: Tuning[];
-  onApply: (notes: number[]) => void;
+  activeSavedName: string | null;
+  onApply: (notes: number[], savedName?: string) => void;
   onSave: (name: string) => void;
   onDelete: (name: string) => void;
+  onRename: (oldName: string, newName: string) => void;
 }
 
 const CUSTOM = "__custom__";
@@ -37,12 +40,15 @@ const CUSTOM = "__custom__";
 export default function TuningPicker({
   currentNotes,
   savedTunings,
+  activeSavedName,
   onApply,
   onSave,
   onDelete,
+  onRename,
 }: Props) {
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("");
+  const [manageOpen, setManageOpen] = useState(false);
 
   const notesKey = (notes: number[]) => notes.join(",");
   const currentKey = notesKey(currentNotes);
@@ -51,10 +57,19 @@ export default function TuningPicker({
     all.find((t) => notesKey(t.notes) === currentKey)?.name ?? CUSTOM;
   const isSavedSelected = savedTunings.some((t) => t.name === selected);
 
+  const trimmedName = saveName.trim();
+  const willOverwrite = savedTunings.some((t) => t.name === trimmedName);
+
+  const openSave = () => {
+    // Pre-fill with the tuning currently being edited so changing its notes and
+    // re-saving updates it in place instead of creating a duplicate.
+    setSaveName(activeSavedName ?? (isSavedSelected ? selected : ""));
+    setSaveOpen(true);
+  };
+
   const submitSave = () => {
-    const name = saveName.trim();
-    if (!name) return;
-    onSave(name);
+    if (!trimmedName) return;
+    onSave(trimmedName);
     setSaveName("");
     setSaveOpen(false);
   };
@@ -66,7 +81,10 @@ export default function TuningPicker({
         onValueChange={(v) => {
           if (!v || v === CUSTOM) return;
           const t = all.find((x) => x.name === v);
-          if (t) onApply(t.notes);
+          if (t) {
+            const isSaved = savedTunings.some((s) => s.name === v);
+            onApply(t.notes, isSaved ? v : undefined);
+          }
         }}
       >
         <SelectTrigger className="w-64">
@@ -98,20 +116,30 @@ export default function TuningPicker({
         </SelectContent>
       </Select>
 
-      <Button variant="outline" onClick={() => setSaveOpen(true)}>
+      <Button variant="outline" onClick={openSave}>
         Save tuning
       </Button>
 
-      {isSavedSelected && (
+      {savedTunings.length > 0 && (
         <Button
-          variant="destructive"
+          variant="outline"
           size="icon"
-          aria-label="Delete this saved tuning"
-          onClick={() => onDelete(selected)}
+          aria-label="Manage saved tunings"
+          title="Manage saved tunings"
+          onClick={() => setManageOpen(true)}
         >
-          <TrashIcon />
+          <SlidersHorizontalIcon />
         </Button>
       )}
+
+      <ManageTuningsDialog
+        open={manageOpen}
+        onOpenChange={setManageOpen}
+        savedTunings={savedTunings}
+        onApply={onApply}
+        onRename={onRename}
+        onDelete={onDelete}
+      />
 
       <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
         <DialogContent className="sm:max-w-sm">
@@ -134,9 +162,14 @@ export default function TuningPicker({
                 onChange={(e) => setSaveName(e.target.value)}
                 placeholder="e.g. My weird tuning"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="font-mono text-xs text-muted-foreground">
                 {currentNotes.map(midiLabel).join(" ")}
               </p>
+              {willOverwrite && (
+                <p className="text-xs text-amber-500">
+                  Updates the existing “{trimmedName}”.
+                </p>
+              )}
             </div>
             <DialogFooter>
               <Button
@@ -146,8 +179,8 @@ export default function TuningPicker({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={!saveName.trim()}>
-                Save
+              <Button type="submit" disabled={!trimmedName}>
+                {willOverwrite ? "Update" : "Save"}
               </Button>
             </DialogFooter>
           </form>
