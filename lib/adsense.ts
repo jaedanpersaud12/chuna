@@ -5,5 +5,5 @@ export const ADSENSE_CLIENT = "ca-pub-1162407702451762";
 // While a slot is empty, <AdUnit> renders a labelled placeholder in dev and
 // nothing in production (so you never ship an empty ad box).
 export const AD_SLOTS = {
-  belowTuner: "", // TODO: paste the "below tuner" display-unit slot id
+  belowTuner: "6420477223", // "chune below tuner" display unit
 } as const;
