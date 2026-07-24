@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
+import { play } from "cuelume"
 
 import { cn } from "@/lib/utils"
 import { CaretRightIcon, CheckIcon } from "@phosphor-icons/react"
@@ -77,6 +78,7 @@ function DropdownMenuItem({
   className,
   inset,
   variant = "default",
+  onPointerEnter,
   ...props
 }: MenuPrimitive.Item.Props & {
   inset?: boolean
@@ -85,6 +87,11 @@ function DropdownMenuItem({
   return (
     <MenuPrimitive.Item
       data-slot="dropdown-menu-item"
+      data-cuelume-toggle
+      onPointerEnter={(event) => {
+        play("tick")
+        onPointerEnter?.(event)
+      }}
       data-inset={inset}
       data-variant={variant}
       className={cn(
