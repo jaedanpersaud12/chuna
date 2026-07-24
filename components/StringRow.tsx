@@ -53,6 +53,7 @@ export default function StringRow({
       <button
         type="button"
         onClick={onSelect}
+        data-cuelume-press="tick"
         className={cn(
           "flex h-16 w-14 flex-col items-center justify-center rounded-2xl border-2 bg-card transition-colors",
           inTune

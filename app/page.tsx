@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { play } from "cuelume";
 import TunerGauge from "@/components/TunerGauge";
 import StringRow from "@/components/StringRow";
 import TuningPicker from "@/components/TuningPicker";
@@ -96,6 +97,7 @@ export default function Home() {
         if (!cancelled) setSaved(cloud);
       } catch (err) {
         if (!cancelled) {
+          play("error");
           toast.error(
             err instanceof Error ? err.message : "Couldn't load your tunings"
           );
@@ -156,14 +158,17 @@ export default function Home() {
       if (user) {
         try {
           await saveCloudTuning(user.id, name, tuning.notes);
+          play("success");
           toast.success(`Saved "${name}" to your account`);
         } catch (err) {
+          play("error");
           toast.error(
             err instanceof Error ? err.message : "Couldn't save to your account"
           );
         }
       } else {
         persistSavedTunings(next);
+        play("success");
         toast.success(`Saved "${name}" on this device`);
       }
     },
@@ -178,14 +183,17 @@ export default function Home() {
       if (user) {
         try {
           await deleteCloudTuning(name);
+          play("success");
           toast.success(`Deleted "${name}"`);
         } catch (err) {
+          play("error");
           toast.error(
             err instanceof Error ? err.message : "Couldn't delete tuning"
           );
         }
       } else {
         persistSavedTunings(next);
+        play("success");
         toast.success(`Deleted "${name}"`);
       }
     },
@@ -197,6 +205,7 @@ export default function Home() {
       const newName = newNameRaw.trim();
       if (!newName || newName === oldName) return;
       if (saved.some((t) => t.name === newName)) {
+        play("error");
         toast.error(`A tuning named "${newName}" already exists`);
         return;
       }
@@ -208,14 +217,17 @@ export default function Home() {
       if (user) {
         try {
           await renameCloudTuning(oldName, newName);
+          play("success");
           toast.success(`Renamed to "${newName}"`);
         } catch (err) {
+          play("error");
           toast.error(
             err instanceof Error ? err.message : "Couldn't rename tuning"
           );
         }
       } else {
         persistSavedTunings(next);
+        play("success");
         toast.success(`Renamed to "${newName}"`);
       }
     },

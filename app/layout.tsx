@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { CuelumeProvider } from "@/components/CuelumeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ADSENSE_CLIENT } from "@/lib/adsense";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <CuelumeProvider />
           <Toaster />
         </ThemeProvider>
         <Script
