@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Public_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+
+const ADSENSE_CLIENT = "ca-pub-1162407702451762";
 
 const publicSans = Public_Sans({subsets:['latin'],variable:'--font-sans'});
 
@@ -21,6 +24,9 @@ export const metadata: Metadata = {
   title: "chune — tune to whatever you want",
   description:
     "Free guitar tuner with fully custom tunings. Set any note on any string.",
+  other: {
+    "google-adsense-account": ADSENSE_CLIENT,
+  },
 };
 
 export default function RootLayout({
@@ -44,6 +50,13 @@ export default function RootLayout({
           {children}
           <Toaster />
         </ThemeProvider>
+        <Script
+          id="adsbygoogle-init"
+          async
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+        />
       </body>
     </html>
   );
