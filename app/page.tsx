@@ -34,6 +34,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import AdUnit from "@/components/AdUnit";
+import { AD_SLOTS } from "@/lib/adsense";
 
 const IN_TUNE_CENTS = 5;
 
@@ -328,6 +330,8 @@ export default function Home() {
           Hz
         </Label>
       </footer>
+
+      <AdUnit slot={AD_SLOTS.belowTuner} className="mt-2 max-w-md" />
     </main>
   );
 }

@@ -5,8 +5,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
-
-const ADSENSE_CLIENT = "ca-pub-1162407702451762";
+import { ADSENSE_CLIENT } from "@/lib/adsense";
 
 const publicSans = Public_Sans({subsets:['latin'],variable:'--font-sans'});
 
